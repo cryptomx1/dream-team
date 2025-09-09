@@ -1,0 +1,13 @@
+labels:
+  - name: bug
+    color: B60205
+    description: Something isn't working
+  - name: enhancement
+    color: 0E8A16
+    description: New feature or request
+  - name: chore
+    color: 1D76DB
+    description: Maintenance/cleanup
+  - name: urgent
+    color: D93F0B
+    description: Needs attention ASAP
