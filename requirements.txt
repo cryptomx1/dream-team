@@ -1,0 +1,1 @@
+Flask==3.0.3\ngunicorn==22.0.0\nrequests==2.32.3\nspeechrecognition==3.10.0\npyttsx3==2.90

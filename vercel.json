@@ -1,0 +1,1 @@
+{"version":2,"builds":[{"src":"middleware.py","use":"@vercel/python","config":{"maxDuration":60}}],"routes":[{"src":"/(.*)","dest":"/middleware.py"}]}
