@@ -1,0 +1,64 @@
+name: Vercel Health Check
+
+on:
+  push:
+    branches: [ main, deploy/vercel-python ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run health check every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    if: vars.VERCEL_BASE_URL != ''
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Health check - Get messages endpoint
+      run: |
+        echo "Testing health of Vercel deployment..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.VERCEL_BASE_URL }}/get_messages")
+        if [ "$RESPONSE" = "200" ]; then
+          echo "✅ Health check passed - /get_messages returned 200"
+        else
+          echo "❌ Health check failed - /get_messages returned $RESPONSE"
+          exit 1
+        fi
+    
+    - name: Health check - Post message endpoint
+      run: |
+        echo "Testing POST endpoint..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"from": "HealthCheck", "content": "Test message"}' \
+          "${{ vars.VERCEL_BASE_URL }}/post_message")
+        if [ "$RESPONSE" = "200" ]; then
+          echo "✅ POST health check passed - /post_message returned 200"
+        else
+          echo "❌ POST health check failed - /post_message returned $RESPONSE"
+          exit 1
+        fi
+    
+    - name: Health check - Clear messages endpoint
+      run: |
+        echo "Testing clear endpoint..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -X POST \
+          "${{ vars.VERCEL_BASE_URL }}/clear_messages")
+        if [ "$RESPONSE" = "200" ]; then
+          echo "✅ Clear health check passed - /clear_messages returned 200"
+        else
+          echo "❌ Clear health check failed - /clear_messages returned $RESPONSE"
+          exit 1
+        fi
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "🚨 Health check failed for Vercel deployment at ${{ vars.VERCEL_BASE_URL }}"
+        echo "Please check the deployment status and logs."
